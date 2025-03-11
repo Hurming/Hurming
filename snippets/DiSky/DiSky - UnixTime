@@ -1,0 +1,69 @@
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+# This code helps users easily convert any date to Unix time directly
+# within Discord, making it easier to schedule events and work with timelines. 🚀
+
+# Command details:
+  # Command: /unix time <year> <month> <day> <hour> <minute> <time>
+  # Example: /unixtime year:2025 month:3 day:12 hour:12 minute:00 time:AM
+
+# Requirements: Skript, DiSky and Skript-Reflect
+  # 1. Skript: https://github.com/SkriptLang/Skript/releases/download/2.10.2/Skript-2.10.2.jar
+  # 2. DiSky: https://modrinth.com/plugin/disky/version/4.22.0
+  # 3. Skript-Reflect: https://www.spigotmc.org/resources/skript-reflect.82259
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+options:
+	Guild: 872891245415002112 # ID of guild Ex: 872891245415002112
+	Bot: Arab Throne # Bot name
+
+import:
+    java.text.SimpleDateFormat
+    java.util.Date
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+slash command unixtime <integer="year"> <integer="month"> <integer="day"> <integer="hour"> <integer="minute"> <string="time">:
+	description: Time Determination by Unix
+	bot: {@Bot}
+	guilds: {@Guild}
+	enabled for: manage server
+	arguments:
+		year:
+			description: Choose a specific year
+		month:
+			description: Choose a specific month
+		day:
+			description: Choose a specific day
+		hour:
+			description: Choose a specific hour
+		minute:
+			description: Choose a specific minute
+		time:
+			description: Choose the time, morning or evening
+			choices:
+				AM: AM
+				PM: PM
+	trigger:
+		set {_date} to new SimpleDateFormat("yyyy/MM/dd hh:mm a").parse("%arg-1%/%arg-2%/%arg-3% %arg-4%:%arg-5% %arg-6%")
+		if all:
+			arg-2 is between 1 and 12
+			arg-3 is between 1 and 31
+			arg-4 is between 1 and 12
+			arg-5 is between 0 and 60
+		then:
+			if {_date} is set:
+				set {_0} to unix date of ({_date}.getTime() / 1000)
+				create a new message and store it in {_msg}:
+					make embed:
+						set title of embed to "**Converted Date:** `%{_date}%`"
+						add inline field named "**Unix Timestamp:**" with value "```%unix timestamp of {_0} - 3 hours%```" to fields of embed
+						add inline field named "**Relative:** <t:%unix timestamp of {_0} - 3 hours%:R>" with value "```<t:%unix timestamp of {_0} - 3 hours%:R>```" to fields of embed
+						add field named "**Date:** <t:%unix timestamp of {_0} - 3 hours%:F>" with value "```<t:%unix timestamp of {_0} - 3 hours%:F>```" to fields of embed
+					add last embed to the embeds of the message
+				reply with hidden {_msg}
+			else:
+				reply with hidden "**Please use the path like this: `yyyy/MM/dd hh:mm a` !**"
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
