@@ -1,6 +1,12 @@
 #=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
 
-Requirements: Skript and DiSky
+# This code is very useful in Discord servers that rely on boosts,
+# as it helps motivate members to support the server, and gives instant
+# notifications about the status of the boosts. 🚀
+
+# Requirements: Skript and DiSky
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
 
 options:
     Image: "https://i.ibb.co/jJspBpT/Boosters.png" # Image shown in the embed
