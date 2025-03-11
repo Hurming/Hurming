@@ -1,0 +1,110 @@
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+Requirements: Skript and DiSky
+
+# You have to download emojis:
+	# - https://www.mediafire.com/file/jo237il0hhvdry1/Emojis.rar/file
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+options:
+	Bot: Arab Throne # Bot name
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+slash command info [<user="user">]:
+	description: Check your profile and level.
+	bot: {@Bot}
+	arguments:
+		user: The profile of a user.
+	trigger:
+		set {_user} to arg-1 ? event-member
+		retrieve owner from guild with id discord id of event-guild and store it in {_ownership}
+		retrieve profile with id discord id of {_user} of {_user} and store it in {_profile}
+
+		set {_owner} to emote "Ownership" in event-guild if {_ownership} is {_user}
+		set {_OnlineStatus} to "%discord online status of {_user} in event-guild%"
+		set {_status} to "%discord online status of {_user} in event-guild%"
+		replace " " with "_" in {_status}
+
+		create a new message and store it in {_message}:
+			make embed:
+				set thumbnail of embed to avatar of {_user}
+				add field named "User Information :identification_card:" with value "- **Username:** `%discord name of {_user}%` %{_owner} ? ""%%nl%- **User ID:** %discord id of {_user}%%nl%- **Display Name:** %{_user}% (%mention tag of {_user}%)%nl%- **Joined Server:** (<t:%rounded unix timestamp of member join date of {_user} in event-guild%:D>) (<t:%rounded unix timestamp of member join date of {_user} in event-guild%:R>)%nl%- **Account Created:** (<t:%rounded unix timestamp of creation date of {_user}%:D>) (<t:%rounded unix timestamp of creation date of {_user}%:R>)%nl%- **Status: %{_OnlineStatus} in strict proper case%** %emote {_status} in event-guild%" to fields of embed
+				add field named "Booster Status %emote "Boosting" in event-guild%" with value "**We thank him/her for boosting us!**" to fields of embed if roles of {_user} contains boost role of event-guild
+				set image of embed to "%profile banner of {_profile}%?size=4096" if profile banner of {_profile} is set
+				set embed color of embed to profile color of {_profile}
+				add last embed to the embeds of the message
+			set {_component.1} to new dropdown with id "Informations"
+			set placeholder of {_component.1} to "which information you want to show?"
+			add new option with value "%discord id of {_user}%_Roles" named "Roles" with description "Click to Show User's Roles" with reaction "blue_book" to options of {_component.1}
+			add new option with value "%discord id of {_user}%_Permissions" named "Permissions" with description "Click to Show User's Permissions" with reaction "orange_book" to options of {_component.1}
+			add new option with value "%discord id of {_user}%_Servers" named "Servers" with description "Click to Show User's Servers" with reaction "link" to options of {_component.1}
+			add new option with value "%discord id of {_user}%_Badges" named "Badges" with description "Click to Show User's Badges" with reaction "label" to options of {_component.1}
+			make new component row and store it in {_component.2}:
+				add new link button with url "%avatar url of {_user}%?size=2048" named "User Avatar URL" to components of the row builder
+				add new link button with url "%profile banner url of {_profile}%?size=4096" named "User Banner URL" to components of the row builder if profile banner of {_profile} is set
+			add {_component.1} and {_component.2} to rows of the message
+		reply with {_message}
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+on dropdown click:
+	if event-string is "Informations":
+		set {_getID} to "%selected values%"
+		replace all "_Roles", "_Permissions", "_Servers" and "_Badges" with "" in {_getID}
+		retrieve member from id {_getID} in event-guild and store it in {_user}
+
+		if "%selected values%" is "%{_getID}%_Roles":
+			loop roles of {_user}:
+				add mention tag of loop-value to {_Roles::*}
+			replyMessage("%{_Roles::*}%", "%size of {_Roles::*}%", "No Roles", "Roles list")
+
+		if "%selected values%" is "%{_getID}%_Badges":
+			loop badges of {_user}:
+				set {_emote} to loop-value
+				replace " " with "_" in {_emote}
+				add "%emote {_emote} in event-guild% %loop-value%" to {_Badges::*}
+			replyMessage("%{_Badges::*}%", "%size of badges of {_user}%", "No Badges", "Badges list")
+
+		if "%selected values%" is "%{_getID}%_Servers":
+			replyMessage("%mutual guild of {_user}%", "%size of mutual guild of {_user}%", "No Servers in Common", "Servers list")
+			
+		if "%selected values%" is "%{_getID}%_Permissions":
+			loop discord permissions Of {_user}:
+				if "%loop-value%" is "administrator":
+					set {_Administrator} to "All Permissions"
+					stop loop
+				if loop-value is "create scheduled events", "manage events", "message mention everyone", "message manage", "manage threads", "voice move others", "moderate members", "voice mute others", "voice deaf others", "kick members", "ban members", "view audit logs", "view guild insights", "view creator monetization analytics", "nickname manage", "manage webhooks", "manage channel", "manage server", "manage roles", "manage permissions", "create guild expressions" or "manage guild expressions":
+					add loop-value to {_Permissions.Events::*} if "%loop-value%" is "create scheduled events", "manage events" or "message mention everyone"
+					add loop-value to {_Permissions.Staff::*} if "%loop-value%" is "message manage", "manage threads", "voice move others", "moderate members", "voice mute others", "voice deaf others", "kick members" or "ban members"
+					add loop-value to {_Permissions.Admins::*} if "%loop-value%" is "view audit logs", "view guild insights", "view creator monetization analytics", "nickname manage", "manage webhooks", "manage channel", "manage server", "manage roles", "manage permissions", "create guild expressions" or "manage guild expressions"
+				else:
+					add loop-value to {_Permissions.General::*}
+			if {_Administrator} is not set:
+				add "**Permissions list: (%size of permissions of {_user}%)**" to {_l::*}
+				set {_number::*} to 28, 3, 8 and 11
+				set {_types::*} to "General", "Events", "Staff" and "Admins"
+				loop {_types::*}:
+					set {_variable} to "%{_Permissions.%loop-value%::*}%"
+					replace all ", ", " and " with "%nl% - " in {_variable}
+					replace all "<none>" with "No Permissions" in {_variable}
+					add "- **%loop-value%  (%size of {_Permissions.%loop-value%::*}%/%{_number::%loop-index%}%)**%nl% - %{_variable} in strict proper case%" to {_l::*}
+			else:
+				add "- **%{_Administrator} in strict proper case%**" to {_l::*}
+			make embed:
+				set description of embed to join {_l::*} with nl
+				set embed color of embed to hex "D3D3D3"
+
+		if "%selected values%" is "%{_getID}%_Roles", "%{_getID}%_Permissions", "%{_getID}%_Badges" or "%{_getID}%_Servers":
+			reply with hidden last created embed
+	stop
+	
+function replyMessage(type: text, size: text, msg: text, list: text):
+	replace all ", ", " and " with "%nl%- " in {_type}
+	replace all "<none>" with {_msg} in {_type}
+	make embed:
+		set description of embed to "**%{_list}%: (%{_size}%)%nl%%nl%- %{_type}%**"
+		set embed color of embed to hex "D3D3D3"
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
