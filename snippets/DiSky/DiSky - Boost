@@ -1,0 +1,33 @@
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+Requirements: Skript, DiSky
+
+options:
+    Image: "https://i.ibb.co/jJspBpT/Boosters.png" # Image shown in the embed
+    Channel: "XXXXXXXXXXXXXXXXXX" # ID channel (Boost channel) Ex: "934561480324579369"
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
+
+on member boost time change:
+	if future event-date is set: # When the server boost started
+		set {_tier} to boost tier of event-guild
+		replace "tier " with "" in {_tier}
+		create a new message and store it in {_msg}:
+			make embed and store it in {_embed}: 
+				set description of embed to "**Thank you<a:HandBoostReverse:931235766703640586> %mention tag of event-member% <a:HandBoost:931235766670090240>for boosting the server.**%nl%                        <a:HandBoostCrystal:931235190481780816>**Boosts:** `%boost amount of event-guild%`                                       <a:HandBoostCrystal:931235190481780816>**Tier:** `%{_tier}%/3`"
+				set embed color of the embed to hex "f47fff"
+				set image of embed to {@Image}
+			add last embed to the embeds of the message
+		post {_msg} to text channel with id {@Channel}
+	if past event-date is set: # When the server boost ended
+		set {_tier} to boost tier of event-guild
+		replace "tier " with "" in {_tier}
+		create a new message and store it in {_msg}:
+			make embed and store it in {_embed}: 
+				set description of embed to "**Thank you<a:HandBoostReverse:931235766703640586> %mention tag of event-member% <a:HandBoost:931235766670090240>but unfortunately, your server boost ended.**%nl%                        <a:HandBoostCrystal:931235190481780816>**Boosts:** `%boost amount of event-guild%`                                       <a:HandBoostCrystal:931235190481780816>**Tier:** `%{_tier}%/3`"
+				set embed color of the embed to red
+				set image of embed to {@Image}
+			add last embed to the embeds of the message
+		post {_msg} to text channel with id {@Channel}
+
+#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#
